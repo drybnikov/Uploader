@@ -23,16 +23,17 @@ import com.test.denis.uploader.util.fileSize
 import com.test.denis.uploader.util.filename
 import com.test.denis.uploader.util.setVisibility
 import com.test.denis.uploader.viewmodel.UploadsViewModel
+import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import kotlinx.android.synthetic.main.activity_uploader.*
 import javax.inject.Inject
 
 
-class UploaderActivity : AppCompatActivity(), Injectable, HasSupportFragmentInjector {
+class UploaderActivity : AppCompatActivity(), Injectable, HasAndroidInjector {
 
     @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
     @Inject
     lateinit var factory: AbstractViewModelFactory<UploadsViewModel>
@@ -151,7 +152,7 @@ class UploaderActivity : AppCompatActivity(), Injectable, HasSupportFragmentInje
     }
 
 
-    override fun supportFragmentInjector() = dispatchingAndroidInjector
+    override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
 
     companion object {
         private const val MEGA_BYTE = 1048576L
