@@ -1,5 +1,6 @@
 package com.test.denis.uploader.ui
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,11 +39,11 @@ class UploadListAdapter(
         viewHolder.bind(listItemModel, callback)
     }
 
-    override fun onViewAttachedToWindow(holder: CarItemViewHolder) {
+    /*override fun onViewAttachedToWindow(holder: CarItemViewHolder) {
         super.onViewAttachedToWindow(holder)
 
         holder.subscribeToUploadingUpdates()
-    }
+    }*/
 
     override fun onViewDetachedFromWindow(holder: CarItemViewHolder) {
         super.onViewDetachedFromWindow(holder)
@@ -53,7 +54,7 @@ class UploadListAdapter(
 
 class CarItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val disposables = CompositeDisposable()
-    lateinit var model: UploadModel
+    private lateinit var model: UploadModel
 
     fun bind(listItemModel: UploadModel, callback: (UploadModel) -> Unit) {
         model = listItemModel
@@ -63,7 +64,13 @@ class CarItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             itemView.setOnClickListener {
                 callback.invoke(listItemModel)
             }
+
+            //TODO SET init values
         }
+
+
+        subscribeToUploadingUpdates()
+        Log.w("CarItemViewHolder", "bind this:$this, model:$model")
     }
 
     fun subscribeToUploadingUpdates() {
@@ -79,6 +86,7 @@ class CarItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     }
 
     fun onDetach() {
+        Log.w("CarItemViewHolder", "onDetach this:$this")
         disposables.clear()
     }
 
@@ -88,5 +96,13 @@ class CarItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     private fun onStatusUpdate(status: UploadStatus) {
         itemView.uploadStatusText.text = status.name
+
+        itemView.uploadStatus.setImageResource(
+            when (status) {
+                UploadStatus.UPLOADED -> R.drawable.ic_check_circle_24px
+                UploadStatus.FAILED -> R.drawable.ic_error_outline_24px
+                else -> R.drawable.ic_cancel_24px
+            }
+        )
     }
 }

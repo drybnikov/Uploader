@@ -6,16 +6,18 @@ import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Provider
 
-class UploadRepository @Inject constructor(private val uploadManager: UploadManager) {
+class UploadRepository @Inject constructor(private val uploadManagerProvider: Provider<UploadManager>) {
 
     val uploadingData = MutableLiveData<List<UploadModel>>(mutableListOf())
 
-    fun addUploadFile(uploadModel: UploadModel) {
+    suspend fun addUploadFile(uploadModel: UploadModel) {
+        val uploadManager = uploadManagerProvider.get()
         val uploadingList = uploadingData.value?.toMutableList() ?: mutableListOf()
 
         val uploadingProgress = uploadManager.uploadProgress(uploadModel.id.hashCode())
-            .debounce(100, TimeUnit.MILLISECONDS, Schedulers.io())
+            .debounce(50, TimeUnit.MILLISECONDS, Schedulers.io())
 
         val streamedUploadModel = uploadModel.apply {
             status = uploadManager.uploadStatus(uploadModel.id.hashCode())
@@ -23,7 +25,7 @@ class UploadRepository @Inject constructor(private val uploadManager: UploadMana
         }
         uploadingList.add(0, streamedUploadModel)
 
-        uploadingData.value = uploadingList
+        uploadingData.postValue(uploadingList)
 
         uploadManager.uploadFile(uploadModel)
     }

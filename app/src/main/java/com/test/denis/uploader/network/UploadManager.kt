@@ -12,11 +12,7 @@ import io.reactivex.subjects.PublishSubject
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
-import java.net.SocketTimeoutException
 import java.net.URLEncoder
 import java.util.*
 import javax.inject.Inject
@@ -30,38 +26,32 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
     private var lastProgressPercentUpdate = 0.0f
     private var uploadId: Int = 0
 
-    fun uploadFile(uploadModel: UploadModel) {
+    suspend fun uploadFile(uploadModel: UploadModel) {
         uploadId = uploadModel.id.hashCode()
-        lastProgressPercentUpdate = 0.0f
+        //lastProgressPercentUpdate = 0.0f
 
         lastWorkId.put(uploadId, UUID.randomUUID())
-        Log.d("UploadManager", "uploadFile $uploadModel, uploadId:$uploadId")
+        Log.w("UploadManager", "uploadFile $uploadModel, uploadId:$uploadId, this:$this")
+        try {
+            val fileUpload = uploadModel.path.createFilePart("upload", ::progressHandler)
+            val dataJson = "{\"data\":{\"name\":\"${uploadModel.name}\"}}"
 
-        val fileUpload = uploadModel.path.createFilePart("upload", ::progressHandler)
-        val dataJson = "{\"data\":{\"name\":\"${uploadModel.name}\"}}"
+            val data = dataJson.createFormData("data")
 
-        val data = dataJson.createFormData("data")
+            updateStatus(uploadId, UploadStatus.UPLOADING)
 
-        updateStatus(uploadId, UploadStatus.UPLOADING)
-
-        val call = uploadApi.uploadFile(fileUpload, data)
-        call.enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void?>?, response: Response<Void?>) {
-                if (response.isSuccessful) {
-                    updateStatus(uploadId, UploadStatus.UPLOADED)
-                } else {
-                    updateStatus(uploadId, UploadStatus.FAILED)
-                }
-            }
-
-            override fun onFailure(call: Call<Void>?, t: Throwable) {
-                if (t is SocketTimeoutException) {
-                    Log.d("uploadimage", "Error occur " + t.message)
-                }
-
+            val response = uploadApi.uploadFile(fileUpload, data)
+            if (response.isSuccessful) {
+                updateStatus(uploadId, UploadStatus.UPLOADED)
+            } else {
+                Log.d("upload file", "Error occur:" + response.errorBody().toString())
                 updateStatus(uploadId, UploadStatus.FAILED)
             }
-        })
+        } catch (e: Exception) {
+            Log.e("upload file", "Error occur:", e)
+
+            updateStatus(uploadId, UploadStatus.FAILED)
+        }
     }
 
     private fun progressHandler(bytesWritten: Long, contentLength: Long) {
@@ -107,7 +97,7 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
         }
     }
 
-    fun updateProgress(uploadId: Int, value: Float) {
+    private fun updateProgress(uploadId: Int, value: Float) {
         progressSubject.get(uploadId)?.onNext(value)
     }
 
@@ -116,8 +106,9 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
             BehaviorSubject.createDefault(UploadStatus.WAITING)
         }
 
-    fun updateStatus(uploadId: Int, status: UploadStatus) {
+    private fun updateStatus(uploadId: Int, status: UploadStatus) {
         statusSubject.get(uploadId)?.onNext(status)
+        Log.e("upload file", "updateStatus uploadId:$uploadId, status:$status, progress:$lastProgressPercentUpdate")
 
         if (status == UploadStatus.UPLOADED) {
             uploadingDone(uploadId)

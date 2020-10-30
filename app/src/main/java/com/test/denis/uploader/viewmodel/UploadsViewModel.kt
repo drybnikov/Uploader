@@ -1,17 +1,15 @@
 package com.test.denis.uploader.viewmodel
 
-import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.test.denis.uploader.model.UploadModel
 import com.test.denis.uploader.model.UploadStatus
 import com.test.denis.uploader.network.UploadRepository
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class UploadsViewModel @Inject constructor(private val repository: UploadRepository) : ViewModel() {
@@ -31,19 +29,14 @@ class UploadsViewModel @Inject constructor(private val repository: UploadReposit
     }
 
     fun onFileSelected(name: String, path: String) {
-        val uploadModel = UploadModel(name.hashCode().toString(), name, path, UploadStatus.WAITING, null, null);
-        repository.addUploadFile(uploadModel)
+        val uploadModel =
+            UploadModel(name.hashCode().toString(), name, path, UploadStatus.WAITING, null, null);
 
-        _fileSelectionData.postValue(uploadModel)
-    }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addUploadFile(uploadModel)
 
-    private fun onSuccess() {
-        loadingProgress.value = false
-    }
-
-    private fun onError(error: Throwable) {
-        Log.w("UploadsViewModel", "onError", error)
-
-        loadingProgress.value = false
+            //TODO Update values
+            _fileSelectionData.postValue(uploadModel.copy(uploadStatus = UploadStatus.UPLOADED))
+        }
     }
 }
