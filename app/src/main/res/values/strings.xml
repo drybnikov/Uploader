@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Uploader</string>
+    <string name="retry">retry</string>
+
+    <string name="upload_file">Upload</string>
+    <string name="content_description_upload">Select file to upload</string>
+</resources>

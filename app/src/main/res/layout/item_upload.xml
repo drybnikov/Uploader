@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/margin_padding_size_micro">
+
+    <ImageView
+        android:id="@+id/fileType"
+        android:layout_width="@dimen/icon_width"
+        android:layout_height="@dimen/icon_width"
+        android:layout_margin="@dimen/margin_padding_size_micro"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/fileName"
+        style="@style/Base.TextAppearance.AppCompat.Subhead"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        app:layout_constraintLeft_toRightOf="@+id/fileType"
+        app:layout_constraintRight_toLeftOf="@id/uploadStatus"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Terms example.pdf" />
+
+    <TextView
+        android:id="@+id/uploadStatusText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        app:layout_constraintLeft_toRightOf="@+id/fileType"
+        app:layout_constraintRight_toLeftOf="@id/uploadStatus"
+        app:layout_constraintTop_toBottomOf="@id/fileName"
+        tools:text="status" />
+
+    <ImageView
+        android:id="@+id/uploadStatus"
+        android:layout_width="@dimen/marker_width"
+        android:layout_height="@dimen/marker_width"
+        android:layout_margin="@dimen/margin_padding_size_micro"
+        android:padding="@dimen/margin_padding_size_micro"
+        android:src="@drawable/ic_cancel_24px"
+        android:tint="@color/colorPrimaryDark"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/uploadProgress"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/margin_padding_size_small"
+        android:progress="0"
+        android:layout_marginTop="@dimen/margin_padding_size_small"
+        android:layout_marginEnd="@dimen/margin_padding_size_small"
+        app:layout_constraintBottom_toBottomOf="@id/fileType"
+        app:layout_constraintLeft_toRightOf="@id/fileType"
+        app:layout_constraintRight_toLeftOf="@id/uploadStatus"
+        app:layout_constraintTop_toBottomOf="@id/uploadStatusText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
