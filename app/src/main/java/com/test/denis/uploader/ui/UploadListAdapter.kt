@@ -65,7 +65,7 @@ class CarItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
                 callback.invoke(listItemModel)
             }
 
-            //TODO SET init values
+            onStatusUpdate(status = uploadStatus)
         }
 
 

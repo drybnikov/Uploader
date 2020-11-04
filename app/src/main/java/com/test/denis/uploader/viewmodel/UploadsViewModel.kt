@@ -10,9 +10,8 @@ import com.test.denis.uploader.network.UploadRepository
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class UploadsViewModel @Inject constructor(private val repository: UploadRepository) : ViewModel() {
+class UploadsViewModel constructor(private val repository: UploadRepository) : ViewModel() {
 
     private val disposables = CompositeDisposable()
 
@@ -33,10 +32,13 @@ class UploadsViewModel @Inject constructor(private val repository: UploadReposit
             UploadModel(name.hashCode().toString(), name, path, UploadStatus.WAITING, null, null);
 
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addUploadFile(uploadModel)
+            loadingProgress.postValue(true)
+
+            val status = repository.addUploadFile(uploadModel)
 
             //TODO Update values
-            _fileSelectionData.postValue(uploadModel.copy(uploadStatus = UploadStatus.UPLOADED))
+            _fileSelectionData.postValue(uploadModel.copy(uploadStatus = status))
+            loadingProgress.postValue(false)
         }
     }
 }

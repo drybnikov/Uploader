@@ -7,35 +7,38 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import com.test.denis.uploader.R
-import com.test.denis.uploader.di.AbstractViewModelFactory
-import com.test.denis.uploader.di.Injectable
 import com.test.denis.uploader.model.UploadModel
 import com.test.denis.uploader.viewmodel.UploadsViewModel
 import kotlinx.android.synthetic.main.uploads_list_layout.*
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class UploadListFragment : Fragment(), Injectable {
+class UploadListFragment : Fragment() {
 
-    @Inject
+    /*@Inject
     lateinit var factory: AbstractViewModelFactory<UploadsViewModel>
 
 
-    private lateinit var viewModel: UploadsViewModel
+    private lateinit var viewModel: UploadsViewModel*/
+
+    private val viewModel: UploadsViewModel by sharedViewModel<UploadsViewModel>()
 
     private var uploadListAdapter = UploadListAdapter {}
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.uploads_list_layout, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        activity?.let {
+        /*activity?.let {
             viewModel = ViewModelProviders.of(it, factory).get(UploadsViewModel::class.java)
-        }
+        }*/
 
         initRecyclerView()
         initViewModel()
@@ -50,9 +53,9 @@ class UploadListFragment : Fragment(), Injectable {
     }
 
     private fun initViewModel() {
-        viewModel.uploadingData().observe(this, Observer { onDataLoaded(it) })
+        viewModel.uploadingData().observe(viewLifecycleOwner, Observer { onDataLoaded(it) })
 
-        viewModel.onFileSelectedData.observe(this, Observer {
+        viewModel.onFileSelectedData.observe(viewLifecycleOwner, Observer {
             Log.d("UploadListFragment", "onFileSelectedData : $it")
         })
     }
@@ -61,7 +64,7 @@ class UploadListFragment : Fragment(), Injectable {
         Log.d("UploadListFragment", "onDataLoaded : $data")
         uploadListAdapter.initData(data)
 
-        contentHolder.text="Proccessing uploads: 0/${data.size}"
+        contentHolder.text = "Proccessing uploads: 0/${data.size}"
     }
 
     override fun onDestroyView() {

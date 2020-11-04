@@ -1,20 +1,22 @@
 package com.test.denis.uploader
 
 import android.app.Application
-import com.test.denis.uploader.di.AppInjector
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasAndroidInjector
-import javax.inject.Inject
+import com.test.denis.uploader.di.appComponent
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
-class UploaderApp : Application(), HasAndroidInjector {
-    @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+class UploaderApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AppInjector.init(this)
-    }
 
-    override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
+        startKoin {
+            // declare used Android context
+            androidContext(this@UploaderApp)
+            // use Koin logger
+            printLogger()
+            // declare modules
+            modules(appComponent)
+        }
+    }
 }

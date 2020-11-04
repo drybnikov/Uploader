@@ -15,9 +15,8 @@ import okhttp3.RequestBody
 import java.io.File
 import java.net.URLEncoder
 import java.util.*
-import javax.inject.Inject
 
-class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
+class UploadManager(private val uploadApi: UploadApi) {
 
     private val progressSubject = SparseArray<PublishSubject<Float>>()
     private val statusSubject = SparseArray<BehaviorSubject<UploadStatus>>()
@@ -26,7 +25,7 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
     private var lastProgressPercentUpdate = 0.0f
     private var uploadId: Int = 0
 
-    suspend fun uploadFile(uploadModel: UploadModel) {
+    suspend fun uploadFile(uploadModel: UploadModel): UploadStatus {
         uploadId = uploadModel.id.hashCode()
         //lastProgressPercentUpdate = 0.0f
 
@@ -46,11 +45,16 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
             } else {
                 Log.d("upload file", "Error occur:" + response.errorBody().toString())
                 updateStatus(uploadId, UploadStatus.FAILED)
+                return UploadStatus.FAILED
             }
+
+            return UploadStatus.UPLOADED
         } catch (e: Exception) {
             Log.e("upload file", "Error occur:", e)
 
             updateStatus(uploadId, UploadStatus.FAILED)
+
+            return UploadStatus.FAILED
         }
     }
 
@@ -108,7 +112,10 @@ class UploadManager @Inject constructor(private val uploadApi: UploadApi) {
 
     private fun updateStatus(uploadId: Int, status: UploadStatus) {
         statusSubject.get(uploadId)?.onNext(status)
-        Log.e("upload file", "updateStatus uploadId:$uploadId, status:$status, progress:$lastProgressPercentUpdate")
+        Log.e(
+            "upload file",
+            "updateStatus uploadId:$uploadId, status:$status, progress:$lastProgressPercentUpdate"
+        )
 
         if (status == UploadStatus.UPLOADED) {
             uploadingDone(uploadId)
